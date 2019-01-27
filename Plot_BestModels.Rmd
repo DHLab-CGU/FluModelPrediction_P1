@@ -1,0 +1,44 @@
+---
+title: "Plot of the best model"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library
+```{r }
+library(ggplot2)
+library(data.table)
+```
+
+### Linkou
+```{r }
+Flu_ARIMA_Yearly_Linkou<-readRDS('Flu_ARIMA_Yearly_Linkou.rds')
+Flu_Linkou_313<-readRDS('Flu_Linkou_313.rds')
+
+ggplot() +
+  geom_line(data = Flu_ARIMA_Yearly_Linkou, 
+            aes(x =as.numeric(year_week_no), y = as.numeric(Point.Forecast)),colour='red')+xlab('Time (year-week)')+ylab('Case count')+
+  scale_x_continuous(breaks=seq(1, 313, 365.25/7),labels = c(2010:2015))+
+  geom_line(data = Flu_Linkou_313[c(1:313),],aes(x =as.numeric(year_week_no), y = N),colour='black')+
+  theme_classic(base_size = 20)
+```
+
+### Kaohsiung
+```{r warning=F}
+Flu_ARIMA_Monthly_Kaohsiung<-readRDS('Flu_ARIMA_Monthly_Kaohsiung.rds')
+Flu_Kaohsiung_313<-readRDS('Flu_Kaohsiung_313.rds')
+Flu_Kaohsiung_313<-rbind(Flu_Kaohsiung_313,data.table(year_week_CDC="2014_47",N=0),fill=T)
+Flu_Kaohsiung_313<-Flu_Kaohsiung_313[order(year_week_CDC)]
+Flu_Kaohsiung_313$year_week_no<-1:313
+
+ggplot() +
+  geom_line(data = Flu_ARIMA_Monthly_Kaohsiung, 
+            aes(x =as.numeric(year_week_no), y = as.numeric(Point.Forecast)),colour='red')+xlab('Time (year-week)')+ylab('Case count')+
+  scale_x_continuous(breaks=seq(1, 313, 365.25/7),labels = c(2010:2015))+
+  geom_line(data = Flu_Kaohsiung_313[c(1:313),],aes(x =as.numeric(year_week_no), y = N),colour='black')+
+  theme_classic(base_size = 20)
+
+```

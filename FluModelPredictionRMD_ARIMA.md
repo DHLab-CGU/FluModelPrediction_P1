@@ -56,7 +56,7 @@ for(i in 0:51){
 predictNULL_Flu_Linkou_313$year_week_no<-""
 predictNULL_Flu_Linkou_313$year_week_no<-262:313
 predictNULL_Flu_Linkou_313<-data.table(predictNULL_Flu_Linkou_313)
-
+predictNULL_Flu_Linkou_313[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Weekly_Linkou.rds')
 
 #RMSE
@@ -100,7 +100,7 @@ for(i in 0:51){
 }
 predictNULL_Flu_Linkou_313_Monthly$year_week_no<-262:313
 predictNULL_Flu_Linkou_313_Monthly<-data.table(predictNULL_Flu_Linkou_313_Monthly)
-
+predictNULL_Flu_Linkou_313_Monthly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_Monthly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Monthly_Linkou.rds')
 
 #RMSE
@@ -146,7 +146,7 @@ for(i in 0:51){
 predictNULL_Flu_Linkou_313_Quarterly$year_week_no<-""
 predictNULL_Flu_Linkou_313_Quarterly$year_week_no<-262:313
 predictNULL_Flu_Linkou_313_Quarterly<-data.table(predictNULL_Flu_Linkou_313_Quarterly)
-
+predictNULL_Flu_Linkou_313_Quarterly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_Quarterly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Quarterly_Linkou.rds')
 
 #RMSE
@@ -187,7 +187,7 @@ for(i in 0:51){
 }
 predictNULL_Flu_Linkou_313_YEARLY$year_week_no<-262:313
 predictNULL_Flu_Linkou_313_YEARLY<-data.table(predictNULL_Flu_Linkou_313_YEARLY)
-
+predictNULL_Flu_Linkou_313_YEARLY[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_YEARLY[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Yearly_Linkou.rds')
 
 #RMSE
@@ -235,6 +235,7 @@ for(i in 0:51){
 
 predictNULL_Flu_Kaohsiung_313$year_week_no<-262:313
 predictNULL_Flu_Kaohsiung_313<-data.table(predictNULL_Flu_Kaohsiung_313)
+predictNULL_Flu_Kaohsiung_313[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Weekly_Kaohsiung.rds')
 
 
@@ -280,6 +281,7 @@ for(i in 0:51){
 
 predictNULL_Flu_Kaohsiung_313_Monthly$year_week_no<-262:313
 predictNULL_Flu_Kaohsiung_313_Monthly<-data.table(predictNULL_Flu_Kaohsiung_313_Monthly)
+predictNULL_Flu_Kaohsiung_313_Monthly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313_Monthly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Monthly_Kaohsiung.rds')
 
 
@@ -325,6 +327,7 @@ for(i in 0:51){
 
 predictNULL_Flu_Kaohsiung_313_Quarterly$year_week_no<-262:313
 predictNULL_Flu_Kaohsiung_313_Quarterly<-data.table(predictNULL_Flu_Kaohsiung_313_Quarterly)
+predictNULL_Flu_Kaohsiung_313_Quarterly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313_Quarterly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Quarterly_Kaohsiung.rds')
 
 #RMSE
@@ -368,6 +371,8 @@ for(i in 0:51){
 }
 predictNULL_Flu_Kaohsiung_313_YEARLY$year_week_no<-262:313
 predictNULL_Flu_Kaohsiung_313_YEARLY<-data.table(predictNULL_Flu_Kaohsiung_313_YEARLY)
+predictNULL_Flu_Kaohsiung_313_YEARLY[Point.Forecast<0]$Point.Forecast<-0
+
 saveRDS(predictNULL_Flu_Kaohsiung_313_YEARLY[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Yearly_Kaohsiung.rds')
 #RMSE
 round(sqrt(mean((predictNULL_Flu_Kaohsiung_313_YEARLY$Point.Forecast-Flu_Kaohsiung_313[262:313]$N)^2)),digits = 1)
