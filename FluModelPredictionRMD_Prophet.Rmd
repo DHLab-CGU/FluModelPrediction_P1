@@ -12,12 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(forecast)
 library(prophet)
+library(MLmetrics)
 ```
 
 
 ## 林口院區資料Episode Data from Linkou Branch
 ```{r }
-
 Flu_Linkou_313<-readRDS('Flu_Linkou_313.rds')
 CDC_yearweek_data<-readRDS('CDC_yearweek_data.rds')
 CDC_yearweek_data_firstdayofweek<-CDC_yearweek_data[,.SD[c(1)],year_week_CDC]
@@ -26,6 +26,18 @@ Flu_Linkou_313<-merge(Flu_Linkou_313,CDC_yearweek_data_firstdayofweek[,c(1,4),wi
 Flu_Linkou_313$Log_N<-log10((Flu_Linkou_313$N)+1)
 Linkou_Test_week<-Flu_Linkou_313[,c('startday','Log_N'),with = F]
 colnames(Linkou_Test_week)<-c('ds','y')
+```
+
+### Function for Model Evaluation 
+```{r }
+model_evaluaion <- function(prediction, real) {
+  MAE_value<-round(MAE(prediction,real) ,digits=2)
+  MAPE_value <- round(MAPE(prediction,real)*100 ,digits=1)
+  RMSE_value <- round(RMSE(prediction,real) ,digits=2)
+  RMSPE_value <- round(RMSPE(prediction,real)*100 ,digits=1)
+   print(paste("MAE:",MAE_value," MAPE:",MAPE_value,
+               " RMSE:",RMSE_value," RMSPE:",RMSPE_value))
+}
 ```
 
 ### 每週更新模型_林口 Updating Interval: Weekly (Linkou)
@@ -48,11 +60,8 @@ Linkou_Test_prediction_week<-data.table(Linkou_Test_prediction_week)
 
 saveRDS(Linkou_Test_prediction_week[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Weekly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_week$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_week$anti_yhat))/52,digits = 1)
-
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_week$anti_yhat,Flu_Linkou_313[262:313]$N)
 
 ```
 
@@ -80,11 +89,8 @@ Linkou_Test_prediction_month<-data.table(Linkou_Test_prediction_month)
 
 saveRDS(Linkou_Test_prediction_month[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Monthly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_month$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_month$anti_yhat))/52,digits = 1)
-
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_month$anti_yhat,Flu_Linkou_313[262:313]$N)
 ```
 
 
@@ -112,10 +118,8 @@ Linkou_Test_prediction_seasonal<-data.table(Linkou_Test_prediction_seasonal)
 
 saveRDS(Linkou_Test_prediction_seasonal[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Quarterly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_seasonal$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_seasonal$anti_yhat))/52,digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_seasonal$anti_yhat,Flu_Linkou_313[262:313]$N)
 
 ```
 
@@ -143,10 +147,8 @@ Linkou_Test_prediction_yearly<-data.table(Linkou_Test_prediction_yearly)
 
 saveRDS(Linkou_Test_prediction_yearly[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Yearly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_yearly$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_yearly$anti_yhat))/52,digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_yearly$anti_yhat,Flu_Linkou_313[262:313]$N)
 
 ```
 
@@ -189,11 +191,8 @@ Kao_Test_prediction_week<-data.table(Kao_Test_prediction_week)
 
 saveRDS(Kao_Test_prediction_week[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Weekly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_week$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_week$anti_yhat))/52,digits = 1)
-
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_week$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
 
@@ -223,11 +222,8 @@ Kao_Test_prediction_month<-data.table(Kao_Test_prediction_month)
 
 saveRDS(Kao_Test_prediction_month[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Monthly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_month$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_month$anti_yhat))/52,digits = 1)
-
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_month$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
 ### 每季更新模型_高雄 Updating Interval: Quarterly (Kaohsiung)
@@ -255,11 +251,8 @@ Kao_Test_prediction_seasonal<-data.table(Kao_Test_prediction_seasonal)
 
 saveRDS(Kao_Test_prediction_seasonal[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Quarterly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_seasonal$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_seasonal$anti_yhat))/52,digits = 1)
-
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_seasonal$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
 ### 每年更新模型_高雄 Updating Interval: Yearly (Kaohsiung)
@@ -286,9 +279,7 @@ Kao_Test_prediction_yearly<-data.table(Kao_Test_prediction_yearly)
 
 saveRDS(Kao_Test_prediction_yearly[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Yearly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_yearly$anti_yhat)^2)),digits = 1)
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_yearly$anti_yhat))/52,digits = 1)
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_yearly$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 
 ```

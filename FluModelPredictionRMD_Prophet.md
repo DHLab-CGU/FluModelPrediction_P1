@@ -12,6 +12,17 @@ library(prophet)
 
     ## Loading required package: Rcpp
 
+``` r
+library(MLmetrics)
+```
+
+    ## 
+    ## Attaching package: 'MLmetrics'
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     Recall
+
 林口院區資料Episode Data from Linkou Branch
 -------------------------------------------
 
@@ -24,6 +35,19 @@ Flu_Linkou_313<-merge(Flu_Linkou_313,CDC_yearweek_data_firstdayofweek[,c(1,4),wi
 Flu_Linkou_313$Log_N<-log10((Flu_Linkou_313$N)+1)
 Linkou_Test_week<-Flu_Linkou_313[,c('startday','Log_N'),with = F]
 colnames(Linkou_Test_week)<-c('ds','y')
+```
+
+### Function for Model Evaluation
+
+``` r
+model_evaluaion <- function(prediction, real) {
+  MAE_value<-round(MAE(prediction,real) ,digits=2)
+  MAPE_value <- round(MAPE(prediction,real)*100 ,digits=1)
+  RMSE_value <- round(RMSE(prediction,real) ,digits=2)
+  RMSPE_value <- round(RMSPE(prediction,real)*100 ,digits=1)
+   print(paste("MAE:",MAE_value," MAPE:",MAPE_value,
+               " RMSE:",RMSE_value," RMSPE:",RMSPE_value))
+}
 ```
 
 ### 每週更新模型\_林口 Updating Interval: Weekly (Linkou)
@@ -415,18 +439,11 @@ Linkou_Test_prediction_week<-data.table(Linkou_Test_prediction_week)
 
 saveRDS(Linkou_Test_prediction_week[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Weekly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_week$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_week$anti_yhat,Flu_Linkou_313[262:313]$N)
 ```
 
-    ## [1] 40
-
-``` r
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_week$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 27.7
+    ## [1] "MAE: 27.72  MAPE: 38.4  RMSE: 40.01  RMSPE: 50.2"
 
 ### 每月更新模型\_林口 Updating Interval: Monthly (Linkou)
 
@@ -547,18 +564,11 @@ Linkou_Test_prediction_month<-data.table(Linkou_Test_prediction_month)
 
 saveRDS(Linkou_Test_prediction_month[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Monthly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_month$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_month$anti_yhat,Flu_Linkou_313[262:313]$N)
 ```
 
-    ## [1] 43.1
-
-``` r
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_month$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 30
+    ## [1] "MAE: 30.03  MAPE: 41.8  RMSE: 43.11  RMSPE: 53.9"
 
 ### 每季更新模型\_林口 Updating Interval:Quarterly (Linkou)
 
@@ -616,18 +626,11 @@ Linkou_Test_prediction_seasonal<-data.table(Linkou_Test_prediction_seasonal)
 
 saveRDS(Linkou_Test_prediction_seasonal[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Quarterly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_seasonal$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_seasonal$anti_yhat,Flu_Linkou_313[262:313]$N)
 ```
 
-    ## [1] 43.6
-
-``` r
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_seasonal$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 30.1
+    ## [1] "MAE: 30.12  MAPE: 41.8  RMSE: 43.6  RMSPE: 54.5"
 
 ### 每年更新模型\_林口 Updating Interval: Yearly (Linkou)
 
@@ -664,18 +667,11 @@ Linkou_Test_prediction_yearly<-data.table(Linkou_Test_prediction_yearly)
 
 saveRDS(Linkou_Test_prediction_yearly[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Yearly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_yearly$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Linkou_Test_prediction_yearly$anti_yhat,Flu_Linkou_313[262:313]$N)
 ```
 
-    ## [1] 43.7
-
-``` r
-#MAE
-round(sum(abs(Flu_Linkou_313[262:313]$N-Linkou_Test_prediction_yearly$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 31.1
+    ## [1] "MAE: 31.1  MAPE: 43.7  RMSE: 43.69  RMSPE: 54.5"
 
 <hr>
 高雄院區資料Episode Data from Kaohsiung Branch
@@ -1084,18 +1080,11 @@ Kao_Test_prediction_week<-data.table(Kao_Test_prediction_week)
 
 saveRDS(Kao_Test_prediction_week[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Weekly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_week$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_week$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
-    ## [1] 43.1
-
-``` r
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_week$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 31.1
+    ## [1] "MAE: 31.12  MAPE: 69.6  RMSE: 43.14  RMSPE: 87.7"
 
 ### 每月更新模型\_高雄 Updating Interval: Monthly (Kaohsiung)
 
@@ -1216,18 +1205,11 @@ Kao_Test_prediction_month<-data.table(Kao_Test_prediction_month)
 
 saveRDS(Kao_Test_prediction_month[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Monthly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_month$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_month$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
-    ## [1] 45.1
-
-``` r
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_month$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 32.9
+    ## [1] "MAE: 32.92  MAPE: 75.9  RMSE: 45.07  RMSPE: 96.1"
 
 ### 每季更新模型\_高雄 Updating Interval: Quarterly (Kaohsiung)
 
@@ -1285,18 +1267,11 @@ Kao_Test_prediction_seasonal<-data.table(Kao_Test_prediction_seasonal)
 
 saveRDS(Kao_Test_prediction_seasonal[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Quarterly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_seasonal$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_seasonal$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
-    ## [1] 46.5
-
-``` r
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_seasonal$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 33.9
+    ## [1] "MAE: 33.85  MAPE: 77.8  RMSE: 46.53  RMSPE: 97.8"
 
 ### 每年更新模型\_高雄 Updating Interval: Yearly (Kaohsiung)
 
@@ -1333,15 +1308,8 @@ Kao_Test_prediction_yearly<-data.table(Kao_Test_prediction_yearly)
 
 saveRDS(Kao_Test_prediction_yearly[,c('year_week_no','anti_yhat'),with=F],'Flu_Prophet_Yearly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_yearly$anti_yhat)^2)),digits = 1)
+#model_evaluation
+model_evaluaion(Kao_Test_prediction_yearly$anti_yhat,Flu_Kaohsiung_313[262:313]$N)
 ```
 
-    ## [1] 46.3
-
-``` r
-#MAE
-round(sum(abs(Flu_Kaohsiung_313[262:313]$N-Kao_Test_prediction_yearly$anti_yhat))/52,digits = 1)
-```
-
-    ## [1] 32.6
+    ## [1] "MAE: 32.61  MAPE: 63  RMSE: 46.27  RMSPE: 81.5"

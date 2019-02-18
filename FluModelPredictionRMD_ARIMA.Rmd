@@ -12,13 +12,19 @@ knitr::opts_chunk$set(echo = TRUE)
 library(data.table)
 library(forecast)
 library(gtools)
+library(MLmetrics)
 ```
 
-##ARIMA模型週期
+## Function for Model Evaluation 
 ```{r }
-weekLIST<-list(
-MONTHLY_weeknum<-c(1,4,8,13,17,22,26,30,35,39,43,48,52),
-SEASON_weeknum<-c(13,26,39,52))
+model_evaluaion <- function(prediction, real) {
+  MAE_value<-round(MAE(prediction,real) ,digits=2)
+  MAPE_value <- round(MAPE(prediction,real)*100 ,digits=1)
+  RMSE_value <- round(RMSE(prediction,real) ,digits=2)
+  RMSPE_value <- round(RMSPE(prediction,real)*100 ,digits=1)
+   print(paste("MAE:",MAE_value," MAPE:",MAPE_value,
+               " RMSE:",RMSE_value," RMSPE:",RMSPE_value))
+}
 ```
 
 ## 林口院區資料Episode Data from Linkou Branch
@@ -26,6 +32,7 @@ SEASON_weeknum<-c(13,26,39,52))
 Flu_Linkou_313<-readRDS('Flu_Linkou_313.rds')
 Flu_Linkou_313$year_week_no<-1:313
 ```
+
 
 ### 每週更新模型_林口 Updating Interval: Weekly (Linkou)
 ```{r }
@@ -51,19 +58,18 @@ for(i in 0:51){
   #print(i)
 }
 
-
 predictNULL_Flu_Linkou_313$year_week_no<-""
 predictNULL_Flu_Linkou_313$year_week_no<-262:313
 predictNULL_Flu_Linkou_313<-data.table(predictNULL_Flu_Linkou_313)
 predictNULL_Flu_Linkou_313[Point.Forecast<0]$Point.Forecast<-0
+
 saveRDS(predictNULL_Flu_Linkou_313[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Weekly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Linkou_313$Point.Forecast-Flu_Linkou_313[262:313]$N)^2)),digits=1)
+#trained_model
+training_Flu_Linkou_313_model
 
-#MAE
-round(sum(abs(predictNULL_Flu_Linkou_313$Point.Forecast-Flu_Linkou_313[262:313]$N))/52,digits=1)
-
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Linkou_313$Point.Forecast,Flu_Linkou_313[262:313]$N)
 ```
 
 ### 每月更新模型_林口 Updating Interval: Monthly (Linkou)
@@ -96,11 +102,11 @@ predictNULL_Flu_Linkou_313_Monthly<-data.table(predictNULL_Flu_Linkou_313_Monthl
 predictNULL_Flu_Linkou_313_Monthly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_Monthly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Monthly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Linkou_313_Monthly$Point.Forecast-Flu_Linkou_313[262:313]$N)^2)),digits = 1)
-#MAE
-round(sum(abs(predictNULL_Flu_Linkou_313_Monthly$Point.Forecast-Flu_Linkou_313[262:313]$N))/52,digits = 1)
+#trained_model
+training_Flu_Linkou_313_model_Monthly
 
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Linkou_313_Monthly$Point.Forecast,Flu_Linkou_313[262:313]$N)
 
 ```
 
@@ -136,12 +142,11 @@ predictNULL_Flu_Linkou_313_Quarterly<-data.table(predictNULL_Flu_Linkou_313_Quar
 predictNULL_Flu_Linkou_313_Quarterly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_Quarterly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Quarterly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Linkou_313_Quarterly$Point.Forecast-Flu_Linkou_313[262:313]$N)^2)),digits=1)
+#trained_model
+training_Flu_Linkou_313_model_Quarterly
 
-#MAE
-round(sum(abs(predictNULL_Flu_Linkou_313_Quarterly$Point.Forecast-Flu_Linkou_313[262:313]$N))/52,digits=1)
-
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Linkou_313_Quarterly$Point.Forecast,Flu_Linkou_313[262:313]$N)
 ```
 
 ### 每年更新模型_林口 Updating Interval: Yearly (Linkou)
@@ -157,7 +162,7 @@ mmm_YEARLY<-data.frame(method = forecast(fit_YEARLY)$method)
 for(i in 0:51){
   
   newtraining_Flu_Linkou_313_YEARLY<-ts(Flu_Linkou_313[c(1:(261+i)),]$N,start =c(2010,01),freq = 365.25/7)
-  fit_YEARLY_arima<-arima(newtraining_Flu_Linkou_313_YEARLY,order = fit_YEARLY$arma[c(1,6,2)],seasonal = list(order = fit_YEARLY$arma[c(3,7,4)],period = fit_YEARLY$arma[5]),method="CSS")
+  fit_YEARLY_arima<-arima(newtraining_Flu_Linkou_313_YEARLY,order = fit_YEARLY$arma[c(1,6,2)],seasonal = list(order = fit_YEARLY$arma[c(3,7,4)],period = fit_YEARLY$arma[5]))
   mmm_YEARLY<-data.frame(method = forecast(fit_YEARLY_arima)$method,week = i)
   nnn<-data.frame(t(fit_YEARLY_arima$coef))
   training_Flu_Linkou_313_model_YEARLY<-rbind(training_Flu_Linkou_313_model_YEARLY,mmm_YEARLY)
@@ -171,16 +176,16 @@ predictNULL_Flu_Linkou_313_YEARLY<-data.table(predictNULL_Flu_Linkou_313_YEARLY)
 predictNULL_Flu_Linkou_313_YEARLY[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Linkou_313_YEARLY[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Yearly_Linkou.rds')
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Linkou_313_YEARLY$Point.Forecast-Flu_Linkou_313[262:313]$N)^2)),digits=1)
+#trained_model
+training_Flu_Linkou_313_model_YEARLY
 
-#MAE
-round(sum(abs(predictNULL_Flu_Linkou_313_YEARLY$Point.Forecast-Flu_Linkou_313[262:313]$N))/52,digits=1)
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Linkou_313_YEARLY$Point.Forecast,Flu_Linkou_313[262:313]$N)
 ```
 
 <hr>
 
-##高雄資料
+##高雄院區資料Episode Data from Kaohsiung Branch
 
 ```{r }
 Flu_Kaohsiung_313<-readRDS('Flu_Kaohsiung_313.rds')
@@ -196,15 +201,18 @@ training_Flu_Kaohsiung_313_model<-NULL
 predictNULL_Flu_Kaohsiung_313<-NULL
 Flu_Kaohsiung_313_model_coefficient<-NULL
 for(i in 0:51){
-  
   newtraining_Flu_Kaohsiung_313<-ts(Flu_Kaohsiung_313[c(1:(261+i)),]$N,start =c(2010,01),freq = 365.25/7)
-  fit<-auto.arima(newtraining_Flu_Kaohsiung_313)
-  mmmk<-data.frame(method = forecast(fit)$method,week = i)
-  nnnk<-data.frame(t(fit$coef))
-  training_Flu_Kaohsiung_313_model<-rbind(training_Flu_Kaohsiung_313_model,mmmk)
-  Flu_Kaohsiung_313_model_coefficient<-smartbind(Flu_Kaohsiung_313_model_coefficient,nnnk)
-  aaa<-forecast(fit,1)
-  predictNULL_Flu_Kaohsiung_313<-rbind(data.frame(predictNULL_Flu_Kaohsiung_313),data.frame(aaa))
+    fit<-auto.arima(newtraining_Flu_Kaohsiung_313)
+    mmm<-data.frame(method = forecast(fit)$method)
+    #print(i)
+  newtraining_Flu_Kaohsiung_313<-ts(Flu_Kaohsiung_313[c(1:(261+i)),]$N,start =c(2010,01),freq = 365.25/7)
+  fit_arima<-arima(newtraining_Flu_Kaohsiung_313,order = fit$arma[c(1,6,2)],seasonal = list(order = fit$arma[c(3,7,4)],period = fit$arma[5]),method="CSS")
+  mmm<-data.frame(method = forecast(fit_arima)$method,week = i)
+  nnn<-data.frame(t(fit_arima$coef))
+  training_Flu_Kaohsiung_313_model<-rbind(training_Flu_Kaohsiung_313_model,mmm)
+  Flu_Kaohsiung_313_model_coefficient<-smartbind(Flu_Kaohsiung_313_model_coefficient,nnn)
+  ppp<-forecast(fit_arima,1)
+  predictNULL_Flu_Kaohsiung_313<-rbind(data.frame(predictNULL_Flu_Kaohsiung_313),data.frame(ppp))
   #print(i)
 }
 
@@ -213,12 +221,11 @@ predictNULL_Flu_Kaohsiung_313<-data.table(predictNULL_Flu_Kaohsiung_313)
 predictNULL_Flu_Kaohsiung_313[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Weekly_Kaohsiung.rds')
 
+#trained_model
+training_Flu_Kaohsiung_313_model
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Kaohsiung_313$Point.Forecast-Flu_Kaohsiung_313[262:313]$N)^2)),digits=1)
-
-#MAE
-round(sum(abs(predictNULL_Flu_Kaohsiung_313$Point.Forecast-Flu_Kaohsiung_313[262:313]$N))/52,digits=1)
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Kaohsiung_313$Point.Forecast,Flu_Kaohsiung_313[262:313]$N)
 
 ```
 
@@ -253,11 +260,11 @@ predictNULL_Flu_Kaohsiung_313_Monthly<-data.table(predictNULL_Flu_Kaohsiung_313_
 predictNULL_Flu_Kaohsiung_313_Monthly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313_Monthly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Monthly_Kaohsiung.rds')
 
+#trained_model
+training_Flu_Kaohsiung_313_model_Monthly
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Kaohsiung_313_Monthly$Point.Forecast-Flu_Kaohsiung_313[262:313]$N)^2)),digits = 1)
-#MAE
-round(sum(abs(predictNULL_Flu_Kaohsiung_313_Monthly$Point.Forecast-Flu_Kaohsiung_313[262:313]$N))/52,digits = 1)
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Kaohsiung_313_Monthly$Point.Forecast,Flu_Kaohsiung_313[262:313]$N)
 ```
 
 ### 每季更新模型_高雄 Updating Interval: Quarterly (Kaohsiung)
@@ -292,11 +299,12 @@ predictNULL_Flu_Kaohsiung_313_Quarterly<-data.table(predictNULL_Flu_Kaohsiung_31
 predictNULL_Flu_Kaohsiung_313_Quarterly[Point.Forecast<0]$Point.Forecast<-0
 saveRDS(predictNULL_Flu_Kaohsiung_313_Quarterly[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Quarterly_Kaohsiung.rds')
 
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Kaohsiung_313_Quarterly$Point.Forecast-Flu_Kaohsiung_313[262:313]$N)^2)),digits=1)
+#trained_model
+training_Flu_Kaohsiung_313_model_Quarterly
 
-#MAE
-round(sum(abs(predictNULL_Flu_Kaohsiung_313_Quarterly$Point.Forecast-Flu_Kaohsiung_313[262:313]$N))/52,digits=1)
+
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Kaohsiung_313_Quarterly$Point.Forecast,Flu_Kaohsiung_313[262:313]$N)
 ```
 
 ### 每年更新模型_高雄  Updating Interval: Yearly (Kaohsiung)
@@ -329,10 +337,11 @@ predictNULL_Flu_Kaohsiung_313_YEARLY<-data.table(predictNULL_Flu_Kaohsiung_313_Y
 predictNULL_Flu_Kaohsiung_313_YEARLY[Point.Forecast<0]$Point.Forecast<-0
 
 saveRDS(predictNULL_Flu_Kaohsiung_313_YEARLY[,c('year_week_no','Point.Forecast'),with=F],'Flu_ARIMA_Yearly_Kaohsiung.rds')
-#RMSE
-round(sqrt(mean((predictNULL_Flu_Kaohsiung_313_YEARLY$Point.Forecast-Flu_Kaohsiung_313[262:313]$N)^2)),digits = 1)
 
-#MAE
-round(sum(abs(predictNULL_Flu_Kaohsiung_313_YEARLY$Point.Forecast-Flu_Kaohsiung_313[262:313]$N))/52,digits = 1)
+#trained_model
+training_Flu_Kaohsiung_313_model_YEARLY
+
+#model_evaluation
+model_evaluaion(predictNULL_Flu_Kaohsiung_313_YEARLY$Point.Forecast,Flu_Kaohsiung_313[262:313]$N)
 
 ```
